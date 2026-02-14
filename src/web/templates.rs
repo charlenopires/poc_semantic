@@ -285,7 +285,7 @@ document.body.addEventListener('htmx:afterRequest', function(e) {
   }
 });
 
-// SSE: listen for PDF ingestion completion to show result in chat
+// SSE: listen for PDF ingestion events — real-time graph + completion summary
 (function() {
   function fmtDur(ms) {
     if (ms < 1000) return ms + 'ms';
@@ -299,6 +299,48 @@ document.body.addEventListener('htmx:afterRequest', function(e) {
   es.onmessage = function(e) {
     try {
       var ev = JSON.parse(e.data);
+
+      // Real-time: add new concept node to graph immediately
+      if (ev.type === 'ConceptCreated') {
+        if (_graph3d) {
+          _graph3d.addNode({
+            id: ev.id,
+            label: ev.label,
+            frequency: ev.frequency,
+            confidence: ev.confidence,
+            energy: ev.energy,
+            state: ev.state,
+            mention_count: 1
+          });
+        }
+        return;
+      }
+
+      // Real-time: update reinforced concept energy
+      if (ev.type === 'ConceptReinforced') {
+        if (_graph3d) {
+          _graph3d.updateNode({ id: ev.id, energy: ev.energy });
+        }
+        return;
+      }
+
+      // Real-time: add new link edge to graph immediately
+      if (ev.type === 'LinkCreated') {
+        if (_graph3d) {
+          _graph3d.addEdge({
+            id: ev.link_id,
+            source: ev.source_id,
+            target: ev.target_id,
+            kind: ev.kind,
+            frequency: ev.frequency,
+            confidence: ev.confidence,
+            energy: ev.energy
+          });
+        }
+        return;
+      }
+
+      // Completion: show summary in chat + full sync
       if (ev.type === 'Completed') {
         var msgs = document.getElementById('chat-messages');
         if (!msgs) return;
@@ -333,6 +375,7 @@ document.body.addEventListener('htmx:afterRequest', function(e) {
             metricsHtml +
           '</div>';
         msgs.appendChild(div);
+        // Full sync on completion to reconcile any missed data
         if (_graph3d) _graph3d.refresh();
       }
     } catch(err) {}

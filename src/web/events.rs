@@ -60,13 +60,21 @@ pub enum IngestionEvent {
     /// Novo conceito cristalizado na KB.
     ///
     /// Emitido quando uma entidade extraída não corresponde a nenhum
-    /// conceito existente (novo conceito criado). O frontend pode
-    /// adicionar um nó ao grafo 3D em tempo real.
+    /// conceito existente (novo conceito criado). O frontend adiciona
+    /// um nó ao grafo 3D em tempo real.
     ConceptCreated {
         /// UUID do novo conceito.
         id: String,
         /// Label do conceito (ex: "Inteligência Artificial").
         label: String,
+        /// Frequência NARS (0.0-1.0).
+        frequency: f64,
+        /// Confiança NARS (0.0-1.0).
+        confidence: f64,
+        /// Energia do conceito (0.0-1.0).
+        energy: f64,
+        /// Estado CSS ("active", "dormant", "fading", "archived").
+        state: String,
     },
 
     /// Conceito existente reforçado (entidade remapeada por similaridade).
@@ -88,14 +96,27 @@ pub enum IngestionEvent {
     /// Novo link criado entre dois conceitos.
     ///
     /// Emitido quando uma relação (Implication, Similarity) é
-    /// estabelecida. O frontend pode adicionar uma aresta ao grafo 3D.
+    /// estabelecida. O frontend adiciona uma aresta ao grafo 3D
+    /// em tempo real.
     LinkCreated {
+        /// UUID do link.
+        link_id: String,
+        /// UUID do conceito-fonte.
+        source_id: String,
         /// Label do conceito-fonte.
         source_label: String,
+        /// UUID do conceito-alvo.
+        target_id: String,
         /// Label do conceito-alvo.
         target_label: String,
         /// Tipo do link ("Implication", "Similarity", etc.).
         kind: String,
+        /// Frequência NARS do link.
+        frequency: f64,
+        /// Confiança NARS do link.
+        confidence: f64,
+        /// Energia do link.
+        energy: f64,
     },
 
     /// Chunk processado completamente.

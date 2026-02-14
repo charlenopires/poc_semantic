@@ -54,16 +54,34 @@ pub struct NluConceptInfo {
     pub similarity: Option<f32>,
     /// Nível de energia atual do conceito após processamento.
     pub energy: f64,
+    /// Frequência NARS (0.0-1.0).
+    pub frequency: f64,
+    /// Confiança NARS (0.0-1.0).
+    pub confidence: f64,
+    /// Estado do conceito ("active", "dormant", "fading", "archived").
+    pub state: String,
 }
 
 /// Informação estruturada sobre um link criado pelo NLU.
 pub struct NluLinkInfo {
+    /// UUID do link.
+    pub id: String,
+    /// UUID do conceito-fonte (Subject).
+    pub source_id: String,
     /// Label do conceito de origem (Subject).
     pub source_label: String,
+    /// UUID do conceito-alvo (Object).
+    pub target_id: String,
     /// Label do conceito de destino (Object).
     pub target_label: String,
     /// Tipo de relação (ex: "Implication", "Similarity").
     pub kind: String,
+    /// Frequência NARS do link.
+    pub frequency: f64,
+    /// Confiança NARS do link.
+    pub confidence: f64,
+    /// Energia do link.
+    pub energy: f64,
 }
 
 /// Resultado completo do processamento NLU de uma mensagem.
@@ -198,7 +216,7 @@ impl NluPipeline {
         for (entity, embedding) in entities.iter().zip(embeddings.iter()) {
             let mut kb_write = kb.write();
 
-            if let Some((existing_id, similarity)) = kb_write.find_similar_concept(embedding, 0.80)
+            if let Some((existing_id, similarity)) = kb_write.find_similar_concept(embedding, 0.90)
             {
                 if let Some(concept) = kb_write.concepts.get_mut(&existing_id) {
                     concept.reinforce();
@@ -213,6 +231,9 @@ impl NluPipeline {
                         is_new: false,
                         similarity: Some(similarity),
                         energy: concept.energy,
+                        frequency: concept.truth.frequency(),
+                        confidence: concept.truth.confidence(),
+                        state: concept.state.css_class().to_string(),
                     });
                     entity_concept_ids.push(existing_id);
                 }
@@ -227,6 +248,9 @@ impl NluPipeline {
                         is_new: false,
                         similarity: None,
                         energy: concept.energy,
+                        frequency: concept.truth.frequency(),
+                        confidence: concept.truth.confidence(),
+                        state: concept.state.css_class().to_string(),
                     });
                     entity_concept_ids.push(existing);
                 }
@@ -246,6 +270,9 @@ impl NluPipeline {
                     is_new: true,
                     similarity: None,
                     energy: concept.energy,
+                    frequency: concept.truth.frequency(),
+                    confidence: concept.truth.confidence(),
+                    state: concept.state.css_class().to_string(),
                 });
                 new_concepts.push(entity.clone());
                 kb_write.add_concept(concept);
@@ -260,6 +287,9 @@ impl NluPipeline {
             let subject_id = entity_concept_ids[0];
             for &other_id in &entity_concept_ids[1..] {
                 if !kb_write.link_exists(&LinkKind::Implication, subject_id, other_id) {
+                    let truth = TruthValue::proto();
+                    let truth_freq = truth.frequency();
+                    let truth_conf = truth.confidence();
                     let link = Link::new(
                         LinkKind::Implication,
                         vec![
@@ -272,8 +302,10 @@ impl NluPipeline {
                                 role: Role::Object,
                             },
                         ],
-                        TruthValue::proto(),
+                        truth,
                     );
+                    let link_id = link.id.to_string();
+                    let link_energy = link.energy;
                     let desc = kb_write.describe_link(&link);
 
                     let source_label = kb_write
@@ -290,9 +322,15 @@ impl NluPipeline {
                     kb_write.add_link(link);
                     tracing::info!(link = %desc, "Novo link criado");
                     link_details.push(NluLinkInfo {
+                        id: link_id,
+                        source_id: subject_id.to_string(),
                         source_label,
+                        target_id: other_id.to_string(),
                         target_label,
                         kind: "Implication".to_string(),
+                        frequency: truth_freq,
+                        confidence: truth_conf,
+                        energy: link_energy,
                     });
                     new_links.push(desc);
                 }
@@ -311,7 +349,7 @@ impl NluPipeline {
                         }
                         if let Some(ref existing_emb) = existing_concept.embedding {
                             let sim = cosine_similarity(new_emb, existing_emb);
-                            if sim > 0.70 && sim < 0.80 {
+                            if sim > 0.78 && sim < 0.90 {
                                 if !kb_read.link_exists(&LinkKind::Similarity, *new_id, *existing_id)
                                     && !kb_read.link_exists(&LinkKind::Similarity, *existing_id, *new_id)
                                 {
@@ -331,6 +369,9 @@ impl NluPipeline {
             if !sim_candidates.is_empty() {
                 let mut kb_write = kb.write();
                 for (new_id, existing_id, sim, new_label, existing_label) in sim_candidates {
+                    let truth = TruthValue::new(sim as f64, 0.6);
+                    let truth_freq = truth.frequency();
+                    let truth_conf = truth.confidence();
                     let link = Link::new(
                         LinkKind::Similarity,
                         vec![
@@ -343,16 +384,24 @@ impl NluPipeline {
                                 role: Role::Object,
                             },
                         ],
-                        TruthValue::new(sim as f64, 0.6),
+                        truth,
                     );
+                    let link_id = link.id.to_string();
+                    let link_energy = link.energy;
                     let desc = format!("{} ≈ {} (sim={:.2})", new_label, existing_label, sim);
 
                     kb_write.add_link(link);
                     tracing::info!(link = %desc, "Auto-link de similaridade criado");
                     link_details.push(NluLinkInfo {
+                        id: link_id,
+                        source_id: new_id.to_string(),
                         source_label: new_label,
+                        target_id: existing_id.to_string(),
                         target_label: existing_label,
                         kind: "Similarity".to_string(),
+                        frequency: truth_freq,
+                        confidence: truth_conf,
+                        energy: link_energy,
                     });
                     new_links.push(desc);
                 }

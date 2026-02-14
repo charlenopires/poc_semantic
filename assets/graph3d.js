@@ -124,6 +124,82 @@
       .catch(function () { /* silent */ });
   };
 
+  // --- Incremental updates (real-time SSE) ---
+
+  /**
+   * Adds a single node (concept) to the graph incrementally.
+   * If the node already exists, updates its properties.
+   * @param {Object} data - {id, label, frequency, confidence, energy, state}
+   */
+  Graph3D.prototype.addNode = function (data) {
+    var existing = this.nodeMap[data.id];
+    if (existing) {
+      existing.label = data.label;
+      existing.frequency = data.frequency;
+      existing.confidence = data.confidence;
+      existing.energy = data.energy;
+      existing.state = data.state;
+      existing.mentionCount = data.mention_count || existing.mentionCount || 1;
+    } else {
+      var spread = 120;
+      var node = {
+        id: data.id,
+        label: data.label,
+        frequency: data.frequency,
+        confidence: data.confidence,
+        energy: data.energy,
+        state: data.state,
+        mentionCount: data.mention_count || 1,
+        x: (Math.random() - 0.5) * spread,
+        y: (Math.random() - 0.5) * spread,
+        z: (Math.random() - 0.5) * spread,
+        vx: 0, vy: 0, vz: 0
+      };
+      this.nodes.push(node);
+      this.nodeMap[data.id] = node;
+    }
+    this._updateStats();
+  };
+
+  /**
+   * Updates an existing node's properties (e.g. on ConceptReinforced).
+   * @param {Object} data - {id, energy, ...optional overrides}
+   */
+  Graph3D.prototype.updateNode = function (data) {
+    var existing = this.nodeMap[data.id];
+    if (!existing) return;
+    if (data.energy !== undefined) existing.energy = data.energy;
+    if (data.frequency !== undefined) existing.frequency = data.frequency;
+    if (data.confidence !== undefined) existing.confidence = data.confidence;
+    if (data.state !== undefined) existing.state = data.state;
+    if (data.label !== undefined) existing.label = data.label;
+    this._updateStats();
+  };
+
+  /**
+   * Adds a single edge (link) to the graph incrementally.
+   * Only adds if both source and target nodes exist.
+   * @param {Object} data - {id, source, target, kind, frequency, confidence, energy}
+   */
+  Graph3D.prototype.addEdge = function (data) {
+    // Skip if source or target node doesn't exist yet
+    if (!this.nodeMap[data.source] || !this.nodeMap[data.target]) return;
+    // Skip duplicate edges
+    for (var i = 0; i < this.edges.length; i++) {
+      if (this.edges[i].id === data.id) return;
+    }
+    this.edges.push({
+      id: data.id,
+      source: data.source,
+      target: data.target,
+      kind: data.kind,
+      frequency: data.frequency,
+      confidence: data.confidence,
+      energy: data.energy
+    });
+    this._updateStats();
+  };
+
   // --- Data ---
 
   Graph3D.prototype._updateData = function (data) {

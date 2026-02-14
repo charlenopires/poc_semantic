@@ -7,8 +7,6 @@
 
   var graph = null;
   var eventSource = null;
-  var refreshTimer = null;
-  var REFRESH_DEBOUNCE = 300;
 
   function init() {
     // Init Graph3D
@@ -343,18 +341,40 @@
 
   function onConceptCreated(ev) {
     addLogEntry('concept-new', '\uD83C\uDF31', 'Novo: ' + ev.label);
-    scheduleGraphRefresh();
+    if (graph) {
+      graph.addNode({
+        id: ev.id,
+        label: ev.label,
+        frequency: ev.frequency,
+        confidence: ev.confidence,
+        energy: ev.energy,
+        state: ev.state,
+        mention_count: 1
+      });
+    }
   }
 
   function onConceptReinforced(ev) {
     var simText = ev.similarity ? ' (sim=' + ev.similarity.toFixed(2) + ')' : '';
     addLogEntry('concept-reinforced', '\uD83C\uDF3F', ev.label + simText + ' \u2192 ' + (ev.energy * 100).toFixed(0) + '%');
-    scheduleGraphRefresh();
+    if (graph) {
+      graph.updateNode({ id: ev.id, energy: ev.energy });
+    }
   }
 
   function onLinkCreated(ev) {
     addLogEntry('link-created', '\uD83D\uDD17', ev.source_label + ' \u2192 ' + ev.target_label);
-    scheduleGraphRefresh();
+    if (graph) {
+      graph.addEdge({
+        id: ev.link_id,
+        source: ev.source_id,
+        target: ev.target_id,
+        kind: ev.kind,
+        frequency: ev.frequency,
+        confidence: ev.confidence,
+        energy: ev.energy
+      });
+    }
   }
 
   function onChunkCompleted(ev) {
@@ -429,13 +449,6 @@
     log.appendChild(entry);
 
     log.scrollTop = log.scrollHeight;
-  }
-
-  function scheduleGraphRefresh() {
-    if (refreshTimer) clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(function () {
-      if (graph) graph.refresh();
-    }, REFRESH_DEBOUNCE);
   }
 
   function formatBytes(bytes) {

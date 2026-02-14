@@ -32,7 +32,7 @@ use crate::web::events::IngestionEvent;
 /// Normaliza texto extraído de PDF para Português Brasileiro.
 pub fn normalize_pdf_text(text: &str) -> String {
     let normalized: String = text.nfc().collect();
-    let re = Regex::new(r"(\w+)\s+(ção|ções|cia|ência|ância|mente|dade|ável|ível)")
+    let re = Regex::new(r"(\w+)\s+(ção|ções|cia|ência|ância|mente|dade|ável|ível|nal|gem|tico|tica|tura|mento|são|sões|oso|osa|ivo|iva|ismo|ista)")
         .expect("invalid regex");
     re.replace_all(&normalized, "$1$2").into_owned()
 }
@@ -151,6 +151,10 @@ pub async fn ingest_pdf(
                 let _ = tx.send(IngestionEvent::ConceptCreated {
                     id: info.id.clone(),
                     label: info.label.clone(),
+                    frequency: info.frequency,
+                    confidence: info.confidence,
+                    energy: info.energy,
+                    state: info.state.clone(),
                 });
             } else {
                 let _ = tx.send(IngestionEvent::ConceptReinforced {
@@ -164,9 +168,15 @@ pub async fn ingest_pdf(
 
         for info in &result.link_details {
             let _ = tx.send(IngestionEvent::LinkCreated {
+                link_id: info.id.clone(),
+                source_id: info.source_id.clone(),
                 source_label: info.source_label.clone(),
+                target_id: info.target_id.clone(),
                 target_label: info.target_label.clone(),
                 kind: info.kind.clone(),
+                frequency: info.frequency,
+                confidence: info.confidence,
+                energy: info.energy,
             });
         }
 
