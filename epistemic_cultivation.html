@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cultivo Epistêmico — Metodologia para Semantic v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* === FLOATING NAV BAR === */
+.method-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 48px;
+  background: rgba(6,7,11,0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(42,46,62,0.6);
+  transition: transform 0.3s ease;
+}
+.method-nav .nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: #f4f5f8;
+}
+.method-nav .nav-brand-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(74,222,128,0.08), rgba(167,139,250,0.08));
+  border: 1px solid rgba(74,222,128,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: #4ade80;
+  flex-shrink: 0;
+}
+.method-nav .nav-brand-text {
+  font-family: 'Newsreader', serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.method-nav .nav-brand-text em {
+  color: #4ade80;
+  font-weight: 300;
+  font-style: italic;
+}
+.method-nav .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.method-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #8b90a0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+.method-nav .nav-link:hover {
+  background: #1a1d2a;
+  color: #e4e7f0;
+}
+.method-nav .nav-link.active {
+  background: rgba(74,222,128,0.08);
+  color: #4ade80;
+}
+</style>
+<style>
+:root {
+  --void: #06070b;
+  --soil: #0c0d14;
+  --earth: #12141e;
+  --stone: #1a1d2a;
+  --fog: #2a2e3e;
+  --ash: #5c6172;
+  --bone: #8b90a0;
+  --skin: #b8bcc8;
+  --milk: #e4e7f0;
+  --snow: #f4f5f8;
+  --seed: #4ade80;
+  --seed-dim: rgba(74,222,128,0.08);
+  --sprout: #22d3ee;
+  --sprout-dim: rgba(34,211,238,0.08);
+  --sun: #fbbf24;
+  --sun-dim: rgba(251,191,36,0.08);
+  --prune: #f87171;
+  --prune-dim: rgba(248,113,113,0.06);
+  --pollen: #a78bfa;
+  --pollen-dim: rgba(167,139,250,0.08);
+  --fruit: #fb923c;
+  --fruit-dim: rgba(251,146,60,0.08);
+  --decay: #6b7280;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--void);
+  color: var(--skin);
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  font-size: 17px;
+  line-height: 1.75;
+  overflow-x: hidden;
+}
+
+/* === OPENING === */
+.opening {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 60px 24px;
+  position: relative;
+}
+
+.opening::after {
+  content:'';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 600px 400px at 30% 40%, rgba(74,222,128,0.04) 0%, transparent 100%),
+    radial-gradient(ellipse 500px 300px at 70% 60%, rgba(167,139,250,0.03) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.opening .provocation {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--ash);
+  max-width: 600px;
+  position: relative;
+  z-index: 1;
+}
+
+.opening h1 {
+  font-family: 'Newsreader', serif;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 700;
+  color: var(--snow);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin: 28px 0 12px;
+  position: relative;
+  z-index: 1;
+}
+.opening h1 em {
+  font-style: italic;
+  color: var(--seed);
+  font-weight: 300;
+}
+
+.opening .subtitle {
+  font-family: 'Newsreader', serif;
+  font-size: 1.15rem;
+  font-weight: 300;
+  color: var(--bone);
+  max-width: 580px;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--ash);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  animation: breathe 3s ease-in-out infinite;
+}
+@keyframes breathe { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
+
+/* === MANIFESTO === */
+.manifesto {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 80px 24px 60px;
+}
+
+.manifesto h2 {
+  font-family: 'Newsreader', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--milk);
+  margin-bottom: 20px;
+}
+
+.manifesto p {
+  margin: 14px 0;
+  color: var(--skin);
+}
+
+.manifesto .contrast {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 28px 0;
+}
+
+.manifesto .contrast .side {
+  padding: 20px;
+  border-radius: 12px;
+}
+.manifesto .contrast .old {
+  background: rgba(248,113,113,0.04);
+  border: 1px solid rgba(248,113,113,0.12);
+}
+.manifesto .contrast .new {
+  background: rgba(74,222,128,0.04);
+  border: 1px solid rgba(74,222,128,0.12);
+}
+.manifesto .contrast .side .tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+}
+.manifesto .contrast .old .tag { color: var(--prune); }
+.manifesto .contrast .new .tag { color: var(--seed); }
+.manifesto .contrast .side .statement {
+  font-family: 'Newsreader', serif;
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+.manifesto .contrast .old .statement { color: var(--bone); }
+.manifesto .contrast .new .statement { color: var(--milk); }
+
+.metaphor-block {
+  margin: 32px 0;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--earth);
+  border: 1px solid var(--stone);
+  position: relative;
+  overflow: hidden;
+}
+.metaphor-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(to bottom, var(--seed), var(--pollen));
+}
+.metaphor-block .mq {
+  font-family: 'Newsreader', serif;
+  font-size: 1.2rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--milk);
+  padding-left: 16px;
+}
+.metaphor-block .mattr {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--ash);
+  padding-left: 16px;
+  margin-top: 8px;
+}
+
+/* === LIFECYCLE SECTION === */
+.lifecycle {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.lifecycle > h2 {
+  font-family: 'Newsreader', serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--snow);
+  text-align: center;
+  margin-bottom: 8px;
+}
+.lifecycle > .intro {
+  text-align: center;
+  color: var(--bone);
+  font-size: 0.95rem;
+  margin-bottom: 40px;
+}
+
+/* STAGE */
+.stage {
+  margin-bottom: 52px;
+  position: relative;
+  scroll-margin-top: 60px;
+}
+
+.stage-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.stage-num {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.stage h3 {
+  font-family: 'Newsreader', serif;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--milk);
+}
+.stage h3 em {
+  font-weight: 300;
+  font-style: italic;
+}
+
+.stage .essence {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  color: var(--bone);
+  font-size: 0.95rem;
+  margin-bottom: 12px;
+  padding-left: 56px;
+}
+
+.stage .body {
+  padding-left: 56px;
+}
+
+.stage .body p { margin: 8px 0; font-size: 0.95rem; }
+
+/* Stage colors */
+.s1 .stage-num { background: var(--seed-dim); color: var(--seed); border: 1px solid rgba(74,222,128,0.25); }
+.s2 .stage-num { background: var(--sprout-dim); color: var(--sprout); border: 1px solid rgba(34,211,238,0.25); }
+.s3 .stage-num { background: var(--sun-dim); color: var(--sun); border: 1px solid rgba(251,191,36,0.25); }
+.s4 .stage-num { background: var(--prune-dim); color: var(--prune); border: 1px solid rgba(248,113,113,0.25); }
+.s5 .stage-num { background: var(--pollen-dim); color: var(--pollen); border: 1px solid rgba(167,139,250,0.25); }
+.s6 .stage-num { background: var(--fruit-dim); color: var(--fruit); border: 1px solid rgba(251,146,60,0.25); }
+
+/* detail block inside a stage */
+.detail {
+  margin: 14px 0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: var(--soil);
+  border: 1px solid var(--stone);
+  font-size: 0.88rem;
+}
+.detail .dlabel {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 6px;
+}
+.detail code {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82rem;
+  background: rgba(0,0,0,0.3);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.s1 .detail .dlabel { color: var(--seed); }
+.s2 .detail .dlabel { color: var(--sprout); }
+.s3 .detail .dlabel { color: var(--sun); }
+.s4 .detail .dlabel { color: var(--prune); }
+.s5 .detail .dlabel { color: var(--pollen); }
+.s6 .detail .dlabel { color: var(--fruit); }
+
+/* DIALOGUE EXAMPLE */
+.dialogue {
+  margin: 16px 0;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--earth);
+  border: 1px solid var(--stone);
+  font-size: 0.88rem;
+}
+.dialogue .line {
+  margin: 6px 0;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.dialogue .who {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  min-width: 60px;
+  padding-top: 3px;
+  flex-shrink: 0;
+}
+.dialogue .who.human { color: var(--sprout); }
+.dialogue .who.system { color: var(--pollen); }
+.dialogue .what {
+  color: var(--skin);
+  line-height: 1.5;
+}
+.dialogue .what em { font-style: italic; color: var(--bone); }
+.dialogue .what strong { color: var(--milk); font-weight: 600; }
+
+/* === QUESTIONS SECTION === */
+.questions {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+.questions h2 {
+  font-family: 'Newsreader', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--snow);
+  margin-bottom: 20px;
+}
+
+.q-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.q-card {
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--soil);
+  border: 1px solid var(--stone);
+}
+.q-card .q-role {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fruit);
+  margin-bottom: 4px;
+}
+.q-card .q-question {
+  font-family: 'Newsreader', serif;
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--milk);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.q-card .q-how {
+  font-size: 0.8rem;
+  color: var(--ash);
+  line-height: 1.4;
+}
+
+/* === SIMULATION === */
+.simulation {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+}
+
+.simulation h2 {
+  font-family: 'Newsreader', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--snow);
+  text-align: center;
+  margin-bottom: 8px;
+}
+.simulation .sim-intro {
+  text-align: center;
+  color: var(--bone);
+  font-size: 0.92rem;
+  margin-bottom: 28px;
+}
+
+.sim-container {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  background: var(--soil);
+  border: 1px solid var(--stone);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sim-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.sim-controls {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+}
+
+.sim-btn {
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--stone);
+  background: rgba(12,13,20,0.9);
+  backdrop-filter: blur(8px);
+  color: var(--skin);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.04em;
+}
+.sim-btn:hover { border-color: var(--seed); color: var(--milk); }
+.sim-btn.active { border-color: var(--seed); color: var(--seed); background: var(--seed-dim); }
+
+.sim-info {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--ash);
+  z-index: 10;
+  line-height: 1.6;
+}
+.sim-info .val { color: var(--seed); }
+
+/* === CLOSING === */
+.closing {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 60px 24px 120px;
+  text-align: center;
+}
+
+.closing h2 {
+  font-family: 'Newsreader', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--snow);
+  margin-bottom: 16px;
+}
+.closing p {
+  color: var(--bone);
+  margin: 10px 0;
+  font-size: 0.95rem;
+}
+.closing .final-thought {
+  font-family: 'Newsreader', serif;
+  font-size: 1.2rem;
+  font-style: italic;
+  color: var(--milk);
+  margin-top: 28px;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--earth);
+  border: 1px solid var(--stone);
+}
+
+@media(max-width: 700px) {
+  .manifesto .contrast { grid-template-columns: 1fr; }
+  .q-grid { grid-template-columns: 1fr; }
+  .stage .essence, .stage .body { padding-left: 0; }
+  .sim-container { height: 380px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="method-nav">
+  <a href="/" class="nav-brand">
+    <span class="nav-brand-icon">CE</span>
+    <span class="nav-brand-text">Cultivo <em>Epistêmico</em></span>
+  </a>
+  <div class="nav-links">
+    <a href="/" class="nav-link">
+      <span>💬</span>
+      <span>Chat</span>
+    </a>
+    <a href="/metodologia" class="nav-link active">
+      <span>📖</span>
+      <span>Metodologia</span>
+    </a>
+  </div>
+</nav>
+
+<!-- OPENING -->
+<section class="opening" style="padding-top: 108px;">
+  <p class="provocation">Ontologias pedem para você desenhar o mapa.<br>Mas e se o território estivesse vivo?</p>
+  <h1>Cultivo<br><em>Epistêmico</em></h1>
+  <p class="subtitle">Uma metodologia para representação de conhecimento vivo — onde humanos não projetam esquemas, mas cultivam jardins de entendimento que crescem, morrem, e se auto-organizam.</p>
+  <span class="scroll-hint">↓ role para explorar</span>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <h2>A Inversão Fundamental</h2>
+
+  <p>Toda ferramenta de representação de conhecimento que existe hoje — OWL, RDF, knowledge graphs, ER diagrams — comete o mesmo erro: trata conhecimento como <strong>matéria morta</strong>. Algo que você extrai, cataloga e arquiva. Como um entomologista que espeta borboletas num quadro.</p>
+
+  <p>A Semantic parte de uma premissa oposta: conhecimento é um <strong>organismo vivo</strong>. Ele nasce fraco e incerto. Ganha força com evidência. Enfraquece quando ignorado. Morre quando irrelevante. E — o mais importante — se reproduz: gera conhecimento novo que ninguém explicitamente criou.</p>
+
+  <div class="contrast">
+    <div class="side old">
+      <div class="tag">Ontologia Tradicional</div>
+      <div class="statement">
+        Pergunte: "Quais são as entidades do seu domínio?"<br><br>
+        Humano vira <strong>arquiteto</strong>.<br>
+        Projeta antes de entender.<br>
+        Esquema fixo, instâncias passivas.<br>
+        Tudo que é definido permanece para sempre.<br>
+        Conflito = erro a resolver.
+      </div>
+    </div>
+    <div class="side new">
+      <div class="tag">Cultivo Epistêmico</div>
+      <div class="statement">
+        Pergunte: "O que aconteceu hoje?"<br><br>
+        Humano vira <strong>jardineiro</strong>.<br>
+        Entende enquanto cultiva.<br>
+        Estrutura emerge, conhecimento é vivo.<br>
+        O que não é nutrido, morre naturalmente.<br>
+        Conflito = tensão fértil a observar.
+      </div>
+    </div>
+  </div>
+
+  <div class="metaphor-block">
+    <div class="mq">"Ninguém pede para uma planta se justificar. Você rega, observa, poda. O jardim revela verdades que o jardineiro nunca planejou."</div>
+    <div class="mattr">— Princípio fundador do Cultivo Epistêmico</div>
+  </div>
+
+  <p>O que segue é a descrição completa de um processo que não existe em lugar nenhum. Não é uma adaptação de ontologia design. Não é knowledge engineering requentado. É um protocolo de interação humano-sistema desenhado especificamente para as propriedades únicas da Semantic: TruthValues revisáveis, energia com decaimento, Links N-ários, e sync distribuído sem coordenação central.</p>
+</section>
+
+<!-- LIFECYCLE -->
+<section class="lifecycle">
+  <h2>Os 6 Estágios do Cultivo</h2>
+  <p class="intro">Cada estágio corresponde a uma propriedade única da Semantic que não existe em nenhum outro sistema.</p>
+
+  <!-- STAGE 1 -->
+  <div class="stage s1" id="s1">
+    <div class="stage-header">
+      <div class="stage-num">01</div>
+      <h3>Semeadura — <em>Narrativa Livre</em></h3>
+    </div>
+    <div class="essence">O humano não desenha — conta histórias. O sistema escuta e cristaliza.</div>
+    <div class="body">
+      <p>Em vez de abrir um editor de ontologia e definir "classes" e "propriedades", o humano simplesmente <strong>narra</strong>. Fala sobre o dia, descreve um problema, conta uma reunião, reclama de um processo. A narrativa é a interface.</p>
+
+      <p>O sistema (com IA) extrai proto-Concepts e proto-Links da narrativa. Mas aqui está a diferença crucial: <strong>tudo começa com confiança baixa</strong>. Um Concept extraído de uma única narrativa nasce com <code>TruthValue ⟨0.5, 0.1⟩</code> — o sistema está dizendo "acho que isso existe, mas não tenho certeza".</p>
+
+      <div class="dialogue">
+        <div class="line"><span class="who human">Humano</span><span class="what">"Ontem o João da logística me ligou porque o embarque da China atrasou por causa da temporada de tufões. Isso vai atrasar a entrega do Q3 pro Cliente Alfa."</span></div>
+        <div class="line"><span class="who system">Sistema</span><span class="what">
+          <em>Cristalizando...</em><br>
+          • <strong>João</strong> → Concept ⟨0.9, 0.15⟩ <em>(nome próprio, alta freq, baixa conf pois 1 fonte)</em><br>
+          • <strong>Logística</strong> → Concept ⟨0.8, 0.12⟩<br>
+          • <strong>Embarque China</strong> → Concept ⟨0.7, 0.10⟩<br>
+          • <strong>Tufões</strong> → Concept ⟨0.6, 0.08⟩<br>
+          • <strong>Cliente Alfa</strong> → Concept ⟨0.9, 0.15⟩<br>
+          • <strong>Entrega Q3</strong> → Concept ⟨0.85, 0.12⟩<br>
+          • Link N=4: <strong>[João ↔role:Subject, Embarque China ↔role:Object, Tufões ↔role:Cause, Entrega Q3 ↔role:Affected]</strong> — kind: Implication ⟨0.7, 0.10⟩
+        </span></div>
+      </div>
+
+      <div class="detail">
+        <div class="dlabel">Por que isso é diferente</div>
+        Nenhum sistema existente faz isso. Knowledge graphs pedem entidades e relações de antemão. NER (Named Entity Recognition) extrai entidades mas não cria relações N-árias com papéis e graus de verdade. A Semeadura produz <strong>sementes de conhecimento</strong> — não fatos, não dados — sementes que podem crescer ou morrer.
+      </div>
+
+      <div class="detail">
+        <div class="dlabel">Mapeamento Semantic</div>
+        Cada narrativa gera um MerkleNode com payload <code>ConceptCreated</code> e <code>LinkFormed</code>. O HLC registra o momento exato. A energy inicial é 0.7 (alta, porque é recente). A confiança é baixa porque há apenas 1 fonte de evidência.
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 2 -->
+  <div class="stage s2" id="s2">
+    <div class="stage-header">
+      <div class="stage-num">02</div>
+      <h3>Germinação — <em>Confirmação Reflexiva</em></h3>
+    </div>
+    <div class="essence">O sistema propõe. O humano confirma, nega, ou nuança. Confiança cresce.</div>
+    <div class="body">
+      <p>Aqui acontece algo que não existe em nenhuma metodologia de engenharia de conhecimento: o sistema <strong>faz perguntas provocativas</strong> baseadas no que já cristalizou. Não perguntas genéricas ("defina melhor") — perguntas calibradas pelos TruthValues.</p>
+
+      <p>O sistema prioriza perguntas sobre Concepts com <strong>alta energia mas baixa confiança</strong> — "coisas que parecem importantes mas sobre as quais sabemos pouco". Isso inverte o processo cognitivo: em vez do humano decidir o que é importante, <strong>o sistema mostra o que parece importante e pergunta se realmente é</strong>.</p>
+
+      <div class="dialogue">
+        <div class="line"><span class="who system">Sistema</span><span class="what"><em>Observação:</em> Você mencionou "atraso de embarque" 7 vezes esta semana, de 3 contextos diferentes. Mas "tufões" apareceu em apenas 1. <strong>Os atrasos são sempre causados pelo clima, ou há outras razões?</strong></span></div>
+        <div class="line"><span class="who human">Humano</span><span class="what">"Na verdade, a maioria dos atrasos é por causa da burocracia alfandegária. Tufão foi só este caso."</span></div>
+        <div class="line"><span class="who system">Sistema</span><span class="what"><em>Atualizando...</em><br>
+          • <strong>Burocracia Alfandegária</strong> → novo Concept ⟨0.8, 0.35⟩ <em>(confirmação direta = boost de confiança)</em><br>
+          • Link: <strong>[Atraso Embarque →Cause→ Burocracia Alfandegária]</strong> ⟨0.8, 0.35⟩<br>
+          • Link anterior <strong>[Atraso →Cause→ Tufões]</strong> revisado: ⟨0.2, 0.30⟩ <em>(baixou freq, subiu conf: "agora temos mais certeza de que tufão é causa RARA")</em>
+        </span></div>
+      </div>
+
+      <div class="detail">
+        <div class="dlabel">O Princípio da Confirmação Reflexiva</div>
+        O humano não está "desenhando uma ontologia" — está respondendo perguntas sobre sua própria experiência. Cada resposta é uma Evidence que alimenta o TruthValue via NARS revision rule. A estrutura emerge das respostas, não de um design prévio. O humano pensa que está "apenas conversando" — na verdade está <strong>cultivando uma base de conhecimento</strong>.
+      </div>
+
+      <div class="detail">
+        <div class="dlabel">As Três Perguntas do Germinador</div>
+        <strong>1. "Isso ainda é verdade?"</strong> — Ataca Concepts com energia declinante. Se sim, reforça. Se não, decai mais rápido.<br>
+        <strong>2. "Tem exceções?"</strong> — Gera Links de Inhibits/Catalyzes. Captura nuância que ontologias perdem.<br>
+        <strong>3. "Quem mais sabe sobre isso?"</strong> — Identifica fontes de evidência futuras. Prepara para Polinização (Stage 5).
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 3 -->
+  <div class="stage s3" id="s3">
+    <div class="stage-header">
+      <div class="stage-num">03</div>
+      <h3>Fotossíntese — <em>Inferência Emergente</em></h3>
+    </div>
+    <div class="essence">O sistema descobre o que ninguém disse explicitamente. Conhecimento novo nasce da composição.</div>
+    <div class="body">
+      <p>Este é o estágio mais alienígena — e o mais poderoso. O motor de inferência NARS executa dedução, indução e abdução sobre os Links existentes e <strong>propõe conhecimento novo</strong> que nenhum humano declarou.</p>
+
+      <p>Em ontologias, todo conhecimento foi explicitamente inserido por alguém. Na Semantic, o Inference Engine <strong>gera hipóteses</strong> — com TruthValues calculados matematicamente — que o humano pode então confirmar ou negar.</p>
+
+      <div class="dialogue">
+        <div class="line"><span class="who system">Sistema</span><span class="what"><em>Inferência encontrada (abdução):</em><br>
+          Premissa 1: <strong>Burocracia Alfandegária →causa→ Atraso Embarque</strong> ⟨0.8, 0.35⟩<br>
+          Premissa 2: <strong>Atraso Embarque →afeta→ Satisfação Cliente Alfa</strong> ⟨0.75, 0.28⟩<br>
+          <strong>Hipótese: Burocracia Alfandegária →afeta→ Satisfação Cliente Alfa</strong> ⟨0.6, 0.09⟩<br><br>
+          <em>Você sabia que problemas alfandegários podem estar diretamente afetando a satisfação do Cliente Alfa? A evidência sugere uma conexão, mas com confiança baixa (0.09). O que acha?</em></span></div>
+        <div class="line"><span class="who human">Humano</span><span class="what">"Faz total sentido. Na verdade, o Cliente Alfa reclamou exatamente disso na última call trimestral."</span></div>
+        <div class="line"><span class="who system">Sistema</span><span class="what"><em>Confirmação humana = nova Evidence positiva.</em><br>
+          Link revisado: <strong>[Burocracia →afeta→ Satisfação Cliente Alfa]</strong> ⟨0.75, 0.32⟩<br>
+          <em>Confiança saltou de 0.09 para 0.32 com a confirmação direta.</em></span></div>
+      </div>
+
+      <div class="detail">
+        <div class="dlabel">Por que isso não existe em nenhum outro sistema</div>
+        Knowledge graphs podem fazer path traversal, mas não propõem NOVO conhecimento com grau de certeza calculado. Sistemas de regras (Prolog, SWRL) deduzem sobre fatos binários. A Semantic infere sobre relações N-árias com TruthValues contínuos — e cada inferência carrega uma medida matemática de quão confiável ela é. O humano pode confiar no cálculo ou sobreescrever com evidência direta.
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 4 -->
+  <div class="stage s4" id="s4">
+    <div class="stage-header">
+      <div class="stage-num">04</div>
+      <h3>Poda — <em>Morte Natural</em></h3>
+    </div>
+    <div class="essence">Conhecimento que ninguém usa, morre. E isso é uma feature, não um bug.</div>
+    <div class="body">
+      <p>Aqui está a propriedade mais radical da Semantic — e a que mais diferencia o Cultivo Epistêmico de qualquer outro método: <strong>o conhecimento tem metabolismo</strong>. A energia de cada Concept decai com o tempo. Se ninguém consulta, referencia, ou adiciona evidência, o Concept passa por Active → Dormant → Fading → Archived.</p>
+
+      <p>Em uma ontologia, um conceito definido em 2019 está lá para sempre, ocupando espaço cognitivo e computacional. Na Semantic, se "Protocolo de Meeting do Zoom" não é mencionado há 8 meses, ele vai perdendo energia. O sistema sinaliza: "Este conhecimento está morrendo. Quer salvá-lo?"</p>
+
+      <div class="dialogue">
+        <div class="line"><span class="who system">Sistema</span><span class="what"><em>Alerta de Poda:</em> 23 Concepts entraram no estado Fading este mês. Os mais significativos:<br>
+          • <strong>"Fornecedor Beta"</strong> — nenhuma menção em 6 meses (energy: 0.08)<br>
+          • <strong>"Processo de Onboarding v1"</strong> — substituído por v2? (energy: 0.05)<br>
+          • <strong>"Meta de Revenue Q1"</strong> — Q1 acabou, ainda relevante? (energy: 0.12)<br><br>
+          <em>Deseja reforçar algum desses, ou deixar que sigam para Archived?</em></span></div>
+        <div class="line"><span class="who human">Humano</span><span class="what">"Fornecedor Beta faliu. Pode arquivar. Onboarding v1 — arquiva, temos o v2. Mas Meta de Revenue Q1 eu preciso para comparar com Q2, reforça."</span></div>
+      </div>
+
+      <div class="detail">
+        <div class="dlabel">O Espelho do Esquecimento Organizacional</div>
+        A Poda revela algo que nenhum outro sistema mostra: <strong>o que a empresa está esquecendo</strong>. Não o que ela não sabe (lacuna), mas o que ela SABIA e está deixando morrer. Isso é informação estratégica pura. Se "Customer Success Process" está perdendo energia, significa que ninguém está falando sobre atendimento ao cliente — possivelmente um problema silencioso.
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 5 -->
+  <div class="stage s5" id="s5">
+    <div class="stage-header">
+      <div class="stage-num">05</div>
+      <h3>Polinização — <em>Multi-Perspectiva Distribuída</em></h3>
+    </div>
+    <div class="essence">Cada pessoa tem sua réplica. Quando sincronizam, contradições viram descobertas.</div>
+    <div class="body">
+      <p>Este estágio só existe porque a Semantic é distribuída via Merkle-CRDT. Cada pessoa na empresa tem sua própria KnowledgeBase (réplica). Cada um semeia, germina, e poda seu próprio jardim. Quando duas réplicas sincronizam, algo extraordinário acontece: <strong>contradições se tornam visíveis</strong>.</p>
+
+      <p>Em sistemas centralizados, se duas pessoas discordam, ou uma sobrescreve a outra, ou um admin "resolve o conflito". Na Semantic, ambas perspectivas coexistem com TruthValues diferentes — e o Merge CRDT as combina matematicamente.</p>
+
+      <div class="dialogue">
+        <div class="line"><span class="who system">Sistema</span><span class="what"><em>Polinização detectada após sync de 3 réplicas:</em><br><br>
+          <strong>Tensão #1: "Principal Causa de Atraso"</strong><br>
+          • Logística (João): Burocracia Alfandegária ⟨0.85, 0.45⟩<br>
+          • Compras (Maria): Fornecedor Atrasado ⟨0.70, 0.38⟩<br>
+          • Financeiro (Pedro): Liberação de Pagamento ⟨0.60, 0.22⟩<br><br>
+          <em>Três departamentos identificam causas diferentes. Nenhum está "errado" — cada um observa o problema de seu ângulo. A confiança combinada sugere que Burocracia é a causa mais evidenciada, mas não dominante.</em><br><br>
+          <strong>Consenso #1: "Cliente Alfa é Prioritário"</strong><br>
+          • Combinado: ⟨0.95, 0.78⟩ — 3 fontes independentes concordam</span></div>
+      </div>
+
+      <div class="detail">
+        <div class="dlabel">O Mapa de Tensões Organizacionais</div>
+        Após Polinização, o sistema gera um <strong>Mapa de Tensões</strong> — uma visualização que mostra onde a organização concorda (Consensos, alto confidence de múltiplas fontes) e onde discorda (Tensões, TruthValues divergentes). Isso é ouro organizacional: não é um "report" — é um raio-X do entendimento coletivo.
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE 6 -->
+  <div class="stage s6" id="s6">
+    <div class="stage-header">
+      <div class="stage-num">06</div>
+      <h3>Colheita — <em>Insight com Medida de Certeza</em></h3>
+    </div>
+    <div class="essence">O jardim maduro responde perguntas que ninguém sabia que precisava fazer.</div>
+    <div class="body">
+      <p>Após ciclos de Semeadura → Germinação → Fotossíntese → Poda → Polinização, a KnowledgeBase atinge um estado que nenhum outro sistema produz: um <strong>mapa vivo do que a organização sabe, quanto confia, e o que está esquecendo</strong>.</p>
+
+      <p>A Colheita é o momento de fazer perguntas ao jardim. Mas as respostas vêm com algo que nenhum dashboard ou BI oferece: <strong>grau de certeza calculado</strong>.</p>
+
+      <div class="dialogue">
+        <div class="line"><span class="who human">Humano</span><span class="what">"Quais riscos ameaçam a entrega do Q4?"</span></div>
+        <div class="line"><span class="who system">Sistema</span><span class="what">
+          <strong>Riscos por confiança (traverse + inference):</strong><br><br>
+          1. Burocracia Alfandegária ↔ Atraso ↔ Cliente Alfa<br>
+          &nbsp;&nbsp;&nbsp;Confiança: 0.72 — <em>8 evidências de 3 fontes</em><br>
+          &nbsp;&nbsp;&nbsp;Energia: 0.89 — <em>mencionado ativamente</em><br><br>
+          2. Fornecedor Gama ↔ Capacidade Reduzida ↔ Componente X<br>
+          &nbsp;&nbsp;&nbsp;Confiança: 0.45 — <em>3 evidências de 1 fonte (apenas Compras)</em><br>
+          &nbsp;&nbsp;&nbsp;Energia: 0.62 — <em>mencionado mas declinando</em><br><br>
+          3. ⚡ <strong>INFERIDO</strong>: Rotatividade RH ↔ Perda Conhecimento ↔ Processo Crítico<br>
+          &nbsp;&nbsp;&nbsp;Confiança: 0.28 — <em>inferência por abdução, sem confirmação direta</em><br>
+          &nbsp;&nbsp;&nbsp;Energia: 0.40 — <em>alguns sinais mas poucas menções</em><br>
+          &nbsp;&nbsp;&nbsp;<em>→ O sistema notou que 3 Concepts com "knowledge owner" único perderam energia após a saída de um funcionário. Hipótese gerada automaticamente.</em>
+        </span></div>
+      </div>
+
+      <div class="detail">
+        <div class="dlabel">A Diferença entre Dado, Informação e Conhecimento Vivo</div>
+        Um dashboard mostra: "4 entregas atrasadas este trimestre" (dado). Um BI mostra: "atrasos aumentaram 25% vs Q3" (informação). A Semantic mostra: "a causa provável é burocracia alfandegária (72% confiança, 8 evidências), há um risco emergente com Fornecedor Gama que só Compras sabe (45% confiança, 1 fonte), e ATENÇÃO: a saída do Pedro pode ter deixado 3 processos críticos sem dono (28% confiança, inferido)" — isso é <strong>conhecimento vivo com medida de certeza</strong>.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUESTIONS SECTION -->
+<section class="questions">
+  <h2>Perguntas que Nenhum Outro Sistema Responde</h2>
+  <p>Cada papel organizacional ganha acesso a perguntas que eram impossíveis antes:</p>
+
+  <div class="q-grid">
+    <div class="q-card">
+      <div class="q-role">CEO</div>
+      <div class="q-question">"O que minha empresa realmente sabe vs o que assume?"</div>
+      <div class="q-how">Filtra por alta freq + baixa conf = suposições perigosas. Alta freq + alta conf = conhecimento sólido.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-role">RH</div>
+      <div class="q-question">"Que conhecimento morre quando essa pessoa sai?"</div>
+      <div class="q-how">Concepts cujo único Evidence.source é o ReplicaId desse funcionário.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-role">Operações</div>
+      <div class="q-question">"Que processo estamos esquecendo de manter?"</div>
+      <div class="q-how">Concepts em estado Fading no Domain "operações" = conhecimento operacional morrendo.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-role">Vendas</div>
+      <div class="q-question">"Onde nossa visão de mercado difere da realidade?"</div>
+      <div class="q-how">Tensões pós-Polinização: visão interna ⟨f,c⟩ vs evidência externa ⟨f,c⟩.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-role">P&D</div>
+      <div class="q-question">"Que conexões ninguém viu ainda?"</div>
+      <div class="q-how">Links gerados por Inference Engine com confiança > 0.15 e 0 confirmações humanas.</div>
+    </div>
+    <div class="q-card">
+      <div class="q-role">Jurídico</div>
+      <div class="q-question">"Que riscos regulatórios têm evidência fraca?"</div>
+      <div class="q-how">Concepts no Domain "compliance" com alta energy mas baixa confidence = risco mal documentado.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SIMULATION -->
+<section class="simulation">
+  <h2>Jardim Epistêmico — Visualização Viva</h2>
+  <p class="sim-intro">Observe como conhecimento nasce, cresce, conecta e morre. Cada círculo é um Concept. Brilho = energia. Tamanho = confiança. Linhas = Links.</p>
+
+  <div class="sim-container">
+    <canvas class="sim-canvas" id="garden"></canvas>
+    <div class="sim-info" id="simInfo">
+      Concepts: <span class="val" id="nConcepts">0</span><br>
+      Links: <span class="val" id="nLinks">0</span><br>
+      Ciclo: <span class="val" id="cycle">0</span><br>
+      Archived: <span class="val" id="nArchived">0</span>
+    </div>
+    <div class="sim-controls">
+      <button class="sim-btn active" onclick="simAction('seed')">🌱 Semear</button>
+      <button class="sim-btn" onclick="simAction('evidence')">✦ Evidência</button>
+      <button class="sim-btn" onclick="simAction('decay')">🍂 Decair</button>
+      <button class="sim-btn" onclick="simAction('infer')">⚡ Inferir</button>
+      <button class="sim-btn" onclick="simAction('auto')">▶ Auto</button>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<section class="closing">
+  <h2>O Que Isso Significa</h2>
+  <p>Cultivo Epistêmico não é uma feature de produto. É uma mudança paradigmática na relação entre humanos e conhecimento organizacional.</p>
+  <p>Pela primeira vez, uma estrutura de dados trata conhecimento com a mesma honestidade com que humanos pensam: "acho que sim, mas não tenho certeza", "isso costumava ser verdade", "todo mundo concorda exceto o financeiro", "ninguém fala mais sobre isso".</p>
+  <p>A Semantic não armazena verdades. Ela cultiva entendimento.</p>
+
+  <div class="final-thought">
+    "A diferença entre uma ontologia e a Semantic<br>é a diferença entre uma fotografia de um jardim<br>e o jardim em si."
+  </div>
+</section>
+
+<script>
+// === EPISTEMIC GARDEN SIMULATION ===
+const canvas = document.getElementById('garden');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  const rect = canvas.parentElement.getBoundingClientRect();
+  W = canvas.width = rect.width * devicePixelRatio;
+  H = canvas.height = rect.height * devicePixelRatio;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+}
+resize();
+window.addEventListener('resize', () => { resize(); });
+
+const concepts = [];
+const links = [];
+let cycleCount = 0;
+let autoMode = false;
+let autoTimer = null;
+
+const LABELS = [
+  'Cliente', 'Fornecedor', 'Logística', 'Qualidade', 'Custo',
+  'Entrega', 'Marketing', 'Produto', 'Equipe', 'Processo',
+  'Risco', 'Mercado', 'Inovação', 'Parceiro', 'Estratégia',
+  'Crescimento', 'Cultura', 'Vendas', 'Suporte', 'Dados',
+  'KPI', 'Feedback', 'Roadmap', 'Sprint', 'Budget',
+  'Compliance', 'Onboarding', 'Pipeline', 'Churn', 'NPS'
+];
+
+const COLORS = {
+  Active: [74, 222, 128],
+  Dormant: [251, 191, 36],
+  Fading: [248, 113, 113],
+  Archived: [107, 114, 128],
+};
+
+function makeConcept() {
+  const rW = W / devicePixelRatio;
+  const rH = H / devicePixelRatio;
+  return {
+    id: Math.random().toString(36).slice(2, 8),
+    label: LABELS[Math.floor(Math.random() * LABELS.length)],
+    x: 60 + Math.random() * (rW - 120),
+    y: 40 + Math.random() * (rH - 100),
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    freq: 0.3 + Math.random() * 0.5,
+    conf: 0.05 + Math.random() * 0.15,
+    energy: 0.5 + Math.random() * 0.5,
+    state: 'Active',
+  };
+}
+
+function seed(n = 3) {
+  for (let i = 0; i < n; i++) {
+    const c = makeConcept();
+    concepts.push(c);
+    if (concepts.length > 2 && Math.random() > 0.3) {
+      const other = concepts[Math.floor(Math.random() * (concepts.length - 1))];
+      if (other.id !== c.id && other.state !== 'Archived') {
+        links.push({ a: c.id, b: other.id, strength: 0.1 + Math.random() * 0.3 });
+      }
+    }
+  }
+}
+
+function addEvidence() {
+  const alive = concepts.filter(c => c.state !== 'Archived');
+  if (!alive.length) return;
+  const target = alive[Math.floor(Math.random() * alive.length)];
+  target.conf = Math.min(0.99, target.conf + 0.05 + Math.random() * 0.1);
+  target.energy = Math.min(1.0, target.energy + 0.15);
+  target.freq = Math.min(1.0, target.freq + (Math.random() > 0.5 ? 0.05 : -0.03));
+  // Maybe add link
+  if (Math.random() > 0.5 && alive.length > 1) {
+    const other = alive[Math.floor(Math.random() * alive.length)];
+    if (other.id !== target.id) {
+      const existing = links.find(l =>
+        (l.a === target.id && l.b === other.id) || (l.b === target.id && l.a === other.id)
+      );
+      if (existing) {
+        existing.strength = Math.min(1.0, existing.strength + 0.1);
+      } else {
+        links.push({ a: target.id, b: other.id, strength: 0.15 });
+      }
+    }
+  }
+}
+
+function decay() {
+  cycleCount++;
+  for (const c of concepts) {
+    if (c.state === 'Archived') continue;
+    c.energy *= (0.88 + Math.random() * 0.06);
+    if (c.energy < 0.08) {
+      c.state = 'Archived';
+      c.energy = 0;
+    } else if (c.energy < 0.2) {
+      c.state = 'Fading';
+    } else if (c.energy < 0.4) {
+      c.state = 'Dormant';
+    }
+  }
+  for (const l of links) {
+    l.strength *= 0.93;
+  }
+}
+
+function infer() {
+  const alive = concepts.filter(c => c.state === 'Active');
+  if (alive.length < 3) return;
+  // Pick two linked concepts and create a transitive link
+  const usableLinks = links.filter(l => {
+    const a = concepts.find(c => c.id === l.a);
+    const b = concepts.find(c => c.id === l.b);
+    return a && b && a.state === 'Active' && b.state === 'Active';
+  });
+  if (usableLinks.length < 2) return;
+  const l1 = usableLinks[Math.floor(Math.random() * usableLinks.length)];
+  const l2 = usableLinks[Math.floor(Math.random() * usableLinks.length)];
+  // Find if they share a node
+  let pivot = null, end1 = null, end2 = null;
+  if (l1.a === l2.a) { pivot = l1.a; end1 = l1.b; end2 = l2.b; }
+  else if (l1.a === l2.b) { pivot = l1.a; end1 = l1.b; end2 = l2.a; }
+  else if (l1.b === l2.a) { pivot = l1.b; end1 = l1.a; end2 = l2.b; }
+  else if (l1.b === l2.b) { pivot = l1.b; end1 = l1.a; end2 = l2.a; }
+
+  if (pivot && end1 !== end2) {
+    const exists = links.find(l =>
+      (l.a === end1 && l.b === end2) || (l.b === end1 && l.a === end2)
+    );
+    if (!exists) {
+      const inferredStrength = l1.strength * l2.strength * 0.6;
+      links.push({ a: end1, b: end2, strength: inferredStrength, inferred: true });
+      // Boost energy of involved concepts
+      const c1 = concepts.find(c => c.id === end1);
+      const c2 = concepts.find(c => c.id === end2);
+      if (c1) c1.energy = Math.min(1, c1.energy + 0.05);
+      if (c2) c2.energy = Math.min(1, c2.energy + 0.05);
+    }
+  }
+}
+
+function simAction(action) {
+  document.querySelectorAll('.sim-btn').forEach(b => b.classList.remove('active'));
+  if (action === 'auto') {
+    autoMode = !autoMode;
+    if (autoMode) {
+      event.target.classList.add('active');
+      event.target.textContent = '⏸ Parar';
+      autoTimer = setInterval(() => {
+        if (Math.random() > 0.6) seed(1);
+        if (Math.random() > 0.4) addEvidence();
+        decay();
+        if (Math.random() > 0.7) infer();
+      }, 800);
+    } else {
+      event.target.textContent = '▶ Auto';
+      clearInterval(autoTimer);
+    }
+    return;
+  }
+  if (autoMode) {
+    autoMode = false;
+    clearInterval(autoTimer);
+    document.querySelector('.sim-btn:last-child').textContent = '▶ Auto';
+  }
+  event.target.classList.add('active');
+  if (action === 'seed') seed(3);
+  if (action === 'evidence') { addEvidence(); addEvidence(); addEvidence(); }
+  if (action === 'decay') decay();
+  if (action === 'infer') { infer(); infer(); }
+}
+
+function physics() {
+  const rW = W / devicePixelRatio;
+  const rH = H / devicePixelRatio;
+  for (const c of concepts) {
+    if (c.state === 'Archived') continue;
+    // Repulsion between concepts
+    for (const o of concepts) {
+      if (o.id === c.id || o.state === 'Archived') continue;
+      const dx = c.x - o.x, dy = c.y - o.y;
+      const d = Math.sqrt(dx*dx + dy*dy) || 1;
+      if (d < 80) {
+        const f = (80 - d) * 0.02;
+        c.vx += (dx/d) * f;
+        c.vy += (dy/d) * f;
+      }
+    }
+    // Link attraction
+    for (const l of links) {
+      const isA = l.a === c.id, isB = l.b === c.id;
+      if (!isA && !isB) continue;
+      const oId = isA ? l.b : l.a;
+      const o = concepts.find(cc => cc.id === oId);
+      if (!o || o.state === 'Archived') continue;
+      const dx = o.x - c.x, dy = o.y - c.y;
+      const d = Math.sqrt(dx*dx + dy*dy) || 1;
+      if (d > 60) {
+        const f = (d - 60) * 0.003 * l.strength;
+        c.vx += (dx/d) * f;
+        c.vy += (dy/d) * f;
+      }
+    }
+    c.vx *= 0.92;
+    c.vy *= 0.92;
+    c.x += c.vx;
+    c.y += c.vy;
+    c.x = Math.max(20, Math.min(rW - 20, c.x));
+    c.y = Math.max(20, Math.min(rH - 40, c.y));
+  }
+}
+
+function draw() {
+  const rW = W / devicePixelRatio;
+  const rH = H / devicePixelRatio;
+  ctx.clearRect(0, 0, rW, rH);
+
+  // Links
+  for (const l of links) {
+    if (l.strength < 0.02) continue;
+    const a = concepts.find(c => c.id === l.a);
+    const b = concepts.find(c => c.id === l.b);
+    if (!a || !b) continue;
+    if (a.state === 'Archived' && b.state === 'Archived') continue;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    const alpha = l.strength * 0.4;
+    if (l.inferred) {
+      ctx.strokeStyle = `rgba(167,139,250,${alpha})`;
+      ctx.setLineDash([4, 4]);
+    } else {
+      ctx.strokeStyle = `rgba(74,222,128,${alpha})`;
+      ctx.setLineDash([]);
+    }
+    ctx.lineWidth = l.strength * 2;
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Concepts
+  for (const c of concepts) {
+    const col = COLORS[c.state];
+    const r = 4 + c.conf * 20;
+    const glow = c.energy;
+
+    if (c.state !== 'Archived' && glow > 0.1) {
+      const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, r + 15);
+      grad.addColorStop(0, `rgba(${col[0]},${col[1]},${col[2]},${glow * 0.25})`);
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, r + 15, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(${col[0]},${col[1]},${col[2]},${0.2 + glow * 0.6})`;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${col[0]},${col[1]},${col[2]},${0.3 + glow * 0.5})`;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    if (c.state !== 'Archived' && r > 8) {
+      ctx.fillStyle = `rgba(228,231,240,${0.3 + glow * 0.5})`;
+      ctx.font = `${Math.max(9, r * 0.7)}px DM Sans`;
+      ctx.textAlign = 'center';
+      ctx.fillText(c.label, c.x, c.y + r + 12);
+    }
+  }
+
+  // Update info
+  const alive = concepts.filter(c => c.state !== 'Archived');
+  const archived = concepts.filter(c => c.state === 'Archived');
+  const activeLinks = links.filter(l => l.strength >= 0.02);
+  document.getElementById('nConcepts').textContent = alive.length;
+  document.getElementById('nLinks').textContent = activeLinks.length;
+  document.getElementById('cycle').textContent = cycleCount;
+  document.getElementById('nArchived').textContent = archived.length;
+}
+
+function loop() {
+  physics();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// Initial seed
+seed(6);
+loop();
+</script>
+
+</body>
+</html>

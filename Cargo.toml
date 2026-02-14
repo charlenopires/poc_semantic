@@ -1,0 +1,47 @@
+[package]
+name = "semantic-chat"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Web
+axum = { version = "0.8", features = ["multipart"] }
+tokio = { version = "1", features = ["full"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["fs", "cors"] }
+maud = "0.26"
+
+# ML / NLU
+candle-core = { version = "0.8", features = ["metal"] }
+candle-nn = "0.8"
+candle-transformers = "0.8"
+tokenizers = "0.21"
+hf-hub = { version = "0.4", features = ["tokio"] }
+
+# PDF
+pdf-extract = "0.10"
+
+# Core
+uuid = { version = "1", features = ["v4", "serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+
+# SSE / Streaming
+tokio-stream = { version = "0.1", features = ["sync"] }
+futures-util = "0.3"
+
+# System metrics
+sysinfo = "0.33"
+core-foundation = "0.10"
+core-foundation-sys = "0.8"
+
+# Utilities
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+parking_lot = "0.12"
+anyhow = "1"
+regex = "1"
+unicode-normalization = "0.1"
+rayon = "1.10"

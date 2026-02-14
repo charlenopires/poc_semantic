@@ -1,0 +1,9 @@
+/target
+/data
+CLAUDE.md
+.claude
+.claude/
+*.swp
+*.swo
+*~
+.DS_Store
