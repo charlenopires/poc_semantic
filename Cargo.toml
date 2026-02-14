@@ -11,12 +11,8 @@ tower = "0.5"
 tower-http = { version = "0.6", features = ["fs", "cors"] }
 maud = "0.26"
 
-# ML / NLU
-candle-core = { version = "0.8", features = ["metal"] }
-candle-nn = "0.8"
-candle-transformers = "0.8"
-tokenizers = "0.21"
-hf-hub = { version = "0.4", features = ["tokio"] }
+# ML / NLU (via LM Studio API)
+reqwest = { version = "0.12", features = ["json"] }
 
 # PDF
 pdf-extract = "0.10"

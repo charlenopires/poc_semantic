@@ -21,10 +21,6 @@
 //!       → Se melhor score > 0.65: retorna intent do template
 //!       → Senão: retorna Narrating (default)
 //! ```
-//!
-//! As heurísticas são verificadas primeiro por desempenho — não precisam
-//! de forward pass no modelo. O fallback por embedding captura variações
-//! que as heurísticas não cobrem.
 
 use anyhow::Result;
 
@@ -32,42 +28,19 @@ use super::embedder::Embedder;
 use crate::core::knowledge_base::cosine_similarity;
 
 /// Intenção classificada a partir da mensagem do usuário.
-///
-/// ## Uso na Pipeline
-///
-/// O intent é incluído no [`NluResult`](super::NluResult) e influencia:
-/// - Como o [`Orchestrator`](crate::orchestrator::Orchestrator) processa a mensagem
-/// - Se o sistema gera perguntas reflexivas (só para `Narrating`)
-/// - Se o sistema confirma/nega insights anteriores
 #[derive(Clone, Debug, PartialEq)]
 pub enum Intent {
     /// Usuário está confirmando ou concordando com algo.
-    ///
-    /// Exemplos: "sim", "correto", "exatamente", "faz sentido", "concordo"
     Confirming,
-
     /// Usuário está negando ou discordando de algo.
-    ///
-    /// Exemplos: "não", "errado", "discordo", "incorreto", "na verdade é diferente"
     Denying,
-
     /// Usuário está fazendo uma pergunta.
-    ///
-    /// Exemplos: "o que é X?", "como funciona?", "por que isso acontece?"
     Querying,
-
     /// Usuário está narrando/informando algo (o caso mais comum).
-    ///
-    /// Este é o intent **padrão** quando nenhum outro se aplica.
-    /// A maioria das mensagens são narrações que adicionam conhecimento.
     Narrating,
 }
 
 /// Template interno de intent com embedding pré-computado.
-///
-/// Na inicialização, cada combinação (intent, frase-template) é
-/// embeddada e armazenada. Na classificação, o embedding da mensagem
-/// é comparado com todos os templates por cosine similarity.
 struct IntentTemplate {
     /// O intent que este template representa.
     intent: Intent,
@@ -79,14 +52,8 @@ struct IntentTemplate {
 ///
 /// ## Inicialização
 ///
-/// Computa embeddings para ~15 templates (5 por intent × 3 intents).
-/// Apenas `Narrating` não tem templates — é o fallback default.
-///
-/// ## Custo
-///
-/// - Inicialização: ~15 × 15ms ≈ 225ms (forward pass para cada template)
-/// - Classificação com heurística: ~0ms
-/// - Classificação com embedding: ~15ms (1 forward pass + 15 comparações cosine)
+/// Computa embeddings para ~15 templates via uma única chamada `embed_batch`
+/// (1 HTTP request vs 15 individuais).
 pub struct IntentClassifier {
     /// Templates com embeddings pré-computados para matching por similaridade.
     templates: Vec<IntentTemplate>,
@@ -95,17 +62,10 @@ pub struct IntentClassifier {
 impl IntentClassifier {
     /// Cria um novo classificador com templates pré-embeddados.
     ///
-    /// Computa embeddings para as frases-template de cada intent:
-    /// - **5 templates** para `Confirming`
-    /// - **5 templates** para `Denying`
-    /// - **5 templates** para `Querying`
-    /// - `Narrating` não tem templates (é o default)
-    ///
-    /// # Erros
-    ///
-    /// Retorna erro se o embedder falhar ao processar os templates.
-    pub fn new(embedder: &Embedder) -> Result<Self> {
-        let template_texts = vec![
+    /// Usa `embed_batch` para computar todos os templates em uma única
+    /// chamada HTTP ao LM Studio (muito mais eficiente).
+    pub async fn new(embedder: &Embedder) -> Result<Self> {
+        let template_defs = vec![
             (Intent::Confirming, vec![
                 "sim, correto, exatamente",
                 "concordo, faz sentido",
@@ -129,18 +89,25 @@ impl IntentClassifier {
             ]),
         ];
 
-        // Computa embedding para cada template
-        let mut templates = Vec::new();
-        for (intent, texts) in template_texts {
+        // Coleta todos os textos e intents para batch
+        let mut all_texts: Vec<String> = Vec::new();
+        let mut all_intents: Vec<Intent> = Vec::new();
+
+        for (intent, texts) in &template_defs {
             for text in texts {
-                // Prefixo "search_query:" indica ao modelo que é uma query
-                let embedding = embedder.embed(&format!("search_query: {}", text))?;
-                templates.push(IntentTemplate {
-                    intent: intent.clone(),
-                    embedding,
-                });
+                all_texts.push(format!("search_query: {}", text));
+                all_intents.push(intent.clone());
             }
         }
+
+        // Uma única chamada HTTP para todos os templates
+        let all_embeddings = embedder.embed_batch(&all_texts).await?;
+
+        let templates: Vec<IntentTemplate> = all_intents
+            .into_iter()
+            .zip(all_embeddings)
+            .map(|(intent, embedding)| IntentTemplate { intent, embedding })
+            .collect();
 
         Ok(Self { templates })
     }
@@ -150,33 +117,15 @@ impl IntentClassifier {
     /// ## Estratégia (2 fases)
     ///
     /// ### Fase 1: Heurísticas Rápidas (~0ms)
+    /// Verifica padrões simples no texto.
     ///
-    /// Verifica padrões simples no texto:
-    /// - Começa com "sim"/"concordo" → `Confirming`
-    /// - Começa com "não"/"discordo" → `Denying`
-    /// - Começa com "o que"/"como"/"por que" ou contém "?" → `Querying`
-    ///
-    /// ### Fase 2: Fallback por Embedding (~15ms)
-    ///
-    /// Se nenhuma heurística acertou, compara o embedding da mensagem
-    /// com os templates pré-computados. O template mais similar determina
-    /// o intent, mas **só se a similaridade > 0.65**.
-    ///
-    /// Se nenhum template é suficientemente similar, retorna `Narrating`.
-    ///
-    /// # Parâmetros
-    ///
-    /// - `text` — mensagem do usuário
-    /// - `embedder` — referência ao embedder para gerar embedding da mensagem
-    ///
-    /// # Retorno
-    ///
-    /// O [`Intent`] classificado — sempre retorna um valor (sem `None`).
-    pub fn classify(&self, text: &str, embedder: &Embedder) -> Result<Intent> {
+    /// ### Fase 2: Fallback por Embedding
+    /// Compara o embedding da mensagem com os templates pré-computados.
+    /// Só aceita se similaridade > 0.65, senão retorna `Narrating`.
+    pub async fn classify(&self, text: &str, embedder: &Embedder) -> Result<Intent> {
         let text_lower = text.to_lowercase().trim().to_string();
 
         // ─── Fase 1: Heurísticas rápidas ─────────────────────────
-        // Verifica padrões conhecidos por substring matching (instantâneo)
         if text_lower.starts_with("sim")
             || text_lower == "correto"
             || text_lower == "exato"
@@ -204,8 +153,7 @@ impl IntentClassifier {
         }
 
         // ─── Fase 2: Fallback por embedding similarity ───────────
-        // Gera embedding da mensagem e compara com todos os templates
-        let embedding = embedder.embed(&format!("search_query: {}", text))?;
+        let embedding = embedder.embed(&format!("search_query: {}", text)).await?;
         let mut best_intent = Intent::Narrating;
         let mut best_score = 0.0f32;
 
@@ -217,8 +165,6 @@ impl IntentClassifier {
             }
         }
 
-        // Threshold 0.65: abaixo disso, não confiamos na classificação
-        // e retornamos Narrating (o default seguro)
         if best_score > 0.65 {
             Ok(best_intent)
         } else {

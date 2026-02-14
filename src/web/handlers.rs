@@ -190,7 +190,10 @@ pub async fn sse_events(
                 let data = serde_json::to_string(&event).ok()?;
                 Some(Ok(SseEvent::default().data(data)))
             }
-            Err(_) => None, // mensagens atrasadas são descartadas
+            Err(e) => {
+                tracing::warn!("SSE consumer lagged: {}", e);
+                None
+            }
         }
     });
     Sse::new(stream).keep_alive(
@@ -241,10 +244,10 @@ pub async fn chat(
         });
     };
 
-    // Processa mensagem via Orchestrator (adquire Mutex)
+    // Processa mensagem via Orchestrator (adquire Mutex async)
     let t0 = Instant::now();
-    let mut orchestrator = model.orchestrator.lock();
-    let responses = orchestrator.process_message(&user_text);
+    let mut orchestrator = model.orchestrator.lock().await;
+    let responses = orchestrator.process_message(&user_text).await;
     drop(orchestrator); // libera Mutex o mais rápido possível
     let elapsed_ms = t0.elapsed().as_millis() as u64;
 
@@ -346,9 +349,9 @@ pub async fn upload_pdf(
                     let kb = state.kb.clone();
                     let tx = state.events_tx.clone();
 
-                    // Processa em background (CPU-bound: BERTimbau forward pass)
-                    tokio::task::spawn_blocking(move || {
-                        match pdf::ingest_pdf(&bytes, &nlu, &kb, &tx) {
+                    // Processa em background (I/O-bound: HTTP calls ao LM Studio)
+                    tokio::spawn(async move {
+                        match pdf::ingest_pdf(&bytes, &nlu, &kb, &tx).await {
                             Ok(msg) => {
                                 tracing::info!(result = %msg, "PDF background ingestion complete");
                             }
@@ -414,7 +417,7 @@ pub async fn reset_knowledge(State(state): State<AppState>) -> Html<String> {
 
     // Reseta estado do orquestrador
     if let Some(model) = state.model.get() {
-        model.orchestrator.lock().reset();
+        model.orchestrator.lock().await.reset();
     }
 
     tracing::info!("KB resetada pelo usuário");
@@ -464,7 +467,7 @@ pub async fn reinforce_concept(
     };
 
     // Reforça via orquestrador
-    let orchestrator = model.orchestrator.lock();
+    let orchestrator = model.orchestrator.lock().await;
     let result = orchestrator.reinforce_concept(uuid);
     drop(orchestrator);
 
@@ -551,6 +554,7 @@ impl MessageRole {
             MessageRole::Inference => "inference",
             MessageRole::Question => "question",
             MessageRole::Alert => "alert",
+            MessageRole::Assistant => "assistant",
         }
     }
 
@@ -562,6 +566,7 @@ impl MessageRole {
             MessageRole::Inference => "Inferência",
             MessageRole::Question => "Germinação",
             MessageRole::Alert => "Alerta",
+            MessageRole::Assistant => "Assistente",
         }
     }
 }
